@@ -1,0 +1,5 @@
+cached_property
+
+git+https://github.com/DroneMapp/powerlibs.git
+git+https://github.com/DroneMapp/powerlibs-django-restless.git
+git+https://github.com/DroneMapp/powerlibs-django-contrib-eventful.git
