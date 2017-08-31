@@ -50,24 +50,33 @@ class ChangeNotifierMixin(NotifierMixin):
             value = getattr(old_object, field_name)
             self._notable_fields_values[field_name] = value
 
+    def get_safe_value_for_status_notification(self, new_value):
+        if isinstance(new_value, bool):
+            safe_value = 'true' if new_value else 'false'
+        elif new_value == '':
+            safe_value = 'blank'
+        else:
+            safe_value = re.sub(r'[^a-z0-9_]+', '_', str(new_value).lower())
+
+        return safe_value
+
+    def get_topic_name_for_status_notification(self, field_name, safe_value):
+        if field_name == 'status':
+            if isinstance(self, CRUDNotifierMixin) and safe_value in ('created', 'updated', 'deleted'):
+                return
+            topic_name = safe_value
+        else:
+            topic_name = "{}__{}".format(field_name, safe_value)
+
+        return topic_name
+
     def post_update_change_notifier(self, **context):
         for field_name, old_value in self._notable_fields_values.items():
             new_value = getattr(self, field_name)
             if new_value != old_value:
 
-                if isinstance(new_value, bool):
-                    safe_value = 'true' if new_value else 'false'
-                elif new_value == '':
-                    safe_value = 'blank'
-                else:
-                    safe_value = re.sub(r'[^a-z0-9_]+', '_', str(new_value).lower())
-
-                if field_name == 'status':
-                    if isinstance(self, CRUDNotifierMixin) and new_value in ('created', 'updated', 'deleted'):
-                        return
-                    topic_name = safe_value
-                else:
-                    topic_name = "{}__{}".format(field_name, safe_value)
+                safe_value = self.get_safe_value_for_status_notification(new_value)
+                topic_name = self.get_topic_name_for_status_notification(field_name, safe_value)
 
                 message = self.serialize()
                 message['_old_value'] = old_value
