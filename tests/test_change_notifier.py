@@ -1,3 +1,4 @@
+from unittest import mock
 import pytest
 
 
@@ -55,12 +56,26 @@ def test_ChangeNotifierModel_activation_change(mocked_notifier, change_notifier_
     assert data['_old_value'] == old_value
 
 
+def test_ChangeNotifierModel_activation_change_when_notification_for_topic_is_canceled(mocked_notifier, change_notifier_model):
+    # Create:
+    instance = change_notifier_model(name='test changing activation data')
+    instance.get_topic_name_for_status_notification = mock.Mock(return_value=None)
+    instance.save()
+
+    assert mocked_notifier.notify.call_count == 0
+
+    # Update:
+    instance.activated = True
+    instance.save()
+
+    assert mocked_notifier.notify.call_count == 0
+
+
 def test_change_notifier_with_blank_value(mocked_notifier, change_notifier_model):
     blank_instance = change_notifier_model(name='', status='')
     blank_instance.save()
 
     topics = tuple(args[0] for args, kwargs in mocked_notifier.notify.call_args_list)
-    print('topics:', topics)
     assert 'change_notifier_model__blank' in topics
 
     """

@@ -78,8 +78,9 @@ class ChangeNotifierMixin(NotifierMixin):
                 safe_value = self.get_safe_value_for_status_notification(new_value)
                 topic_name = self.get_topic_name_for_status_notification(field_name, safe_value)
 
-                message = self.serialize()
-                message['_old_value'] = old_value
-                message['_changed_field'] = field_name
+                if topic_name:
+                    message = self.serialize()
+                    message['_old_value'] = old_value
+                    message['_changed_field'] = field_name
 
-                self.notify(topic_name, message)
+                    self.notify(topic_name, message)
