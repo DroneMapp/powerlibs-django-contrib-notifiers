@@ -84,3 +84,17 @@ class ChangeNotifierMixin(NotifierMixin):
                     message['_changed_field'] = field_name
 
                     self.notify(topic_name, message)
+
+
+class SoftDeletionNotifier:
+    def post_update_crud_notifier(self, **context):
+        if self.deleted is True:
+            self.notify('soft_deleted')
+        else:
+            self.notify('updated')
+
+    def serialize(self):
+        data = super().serialize()
+        if 'deleted' in data:
+            del data['deleted']
+        return data
