@@ -45,3 +45,5 @@ def test_CRUDNotifierModel_deletion(mocked_notifier, crud_notifier_model):
     topic, data = args
 
     assert topic == 'crud_notifier_model__deleted'
+    assert 'id' in data
+    assert data['id'] is not None

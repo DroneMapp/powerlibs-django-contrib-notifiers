@@ -26,8 +26,13 @@ class CRUDNotifierMixin(NotifierMixin):
     def post_update_crud_notifier(self, **context):
         self.notify('updated')
 
+    def pre_delete_crud_notifier(self, **context):
+        self._backup_pk = self.pk
+
     def post_delete_crud_notifier(self, **context):
-        self.notify('deleted')
+        payload = self.serialize()
+        payload['id'] = self.pk or self._backup_pk
+        self.notify('deleted', payload)
 
 
 class ChangeNotifierMixin(NotifierMixin):
