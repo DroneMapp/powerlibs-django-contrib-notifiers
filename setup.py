@@ -5,7 +5,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-version = '0.0.3'
+version = '0.1.0'
 
 
 def pip_git_to_setuptools_git(url):
@@ -16,6 +16,7 @@ def pip_git_to_setuptools_git(url):
             **match.groupdict()
         )
     return url
+
 
 requires = []
 dependency_links = []

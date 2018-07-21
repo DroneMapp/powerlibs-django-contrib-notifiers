@@ -4,6 +4,9 @@ from powerlibs.string_utils import snake_case
 from powerlibs.django.contrib.eventful.models import EventfulModelMixin
 
 
+SQS_MAX_MESSAGE_SIZE = 262144
+
+
 class NotifierMixin(EventfulModelMixin):
     notifiers = []
 
@@ -11,8 +14,26 @@ class NotifierMixin(EventfulModelMixin):
     def notification_prefixes(self):
         return [snake_case(type(self).__name__)]
 
+    @staticmethod
+    def _shorten_message(message):
+        message['_supressed'] = []
+
+        while str(message) > SQS_MAX_MESSAGE_SIZE:
+            longer = None
+            for key, value in message.items():
+                if longer is None:
+                    longer = key
+                elif len(str(value)) > len(str(message[longer])):
+                    longer = key
+
+            if longer:
+                message[longer] = None
+                message['_supressed'].append(longer)
+
     def notify(self, topic, message=None):
         message = message or self.serialize()
+        self._shorten_message(message)
+
         for prefix in self.notification_prefixes:
             prefixed_topic = '{}__{}'.format(prefix, topic)
             for notifier in self.notifiers:
