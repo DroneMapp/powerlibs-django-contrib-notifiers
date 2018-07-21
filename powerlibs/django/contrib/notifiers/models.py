@@ -18,7 +18,7 @@ class NotifierMixin(EventfulModelMixin):
     def _shorten_message(message):
         message['_supressed'] = []
 
-        while str(message) > SQS_MAX_MESSAGE_SIZE:
+        while len(str(message)) > SQS_MAX_MESSAGE_SIZE:
             longer = None
             for key, value in message.items():
                 if longer is None:
